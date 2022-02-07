@@ -1,10 +1,21 @@
 import React from 'react'
 import { useEffect } from 'react'
 import { useState } from 'react'
-import { FlatList, Text, TouchableOpacity } from 'react-native'
-import { View } from 'react-native'
+import { FlatList } from 'react-native'
 import * as RNFS from 'react-native-fs'
-import TrackPlayer from 'react-native-track-player'
+import TrackPlayer, { Capability, Event } from 'react-native-track-player'
+import { getPhoto } from 'src/api/config'
+import styled from 'styled-components/native'
+
+const MusicBlock = styled.TouchableOpacity`
+  width: 100%;
+  padding: 10px 15px;
+`
+
+const Text = styled.Text`
+  font-size: 18px;
+  color: white;
+`
 
 export const MusicList = () => {
   const [files, setFiles] = useState<RNFS.ReadDirItem[]>([])
@@ -12,26 +23,32 @@ export const MusicList = () => {
   useEffect(() => {
     RNFS.readDir(`${RNFS.ExternalStorageDirectoryPath}/Music`)
       .then(res => res)
-      .then(file => setFiles(file.filter(item => item.name.endsWith('.mp3'))))
+      .then(file => {
+        setFiles(file.filter(item => item.name.endsWith('.mp3')))
+      })
       .catch(err => console.log(err))
   }, [])
 
-  console.log(files[0])
-
   const start = async (file: RNFS.ReadDirItem) => {
-    // Set up the player
+    await TrackPlayer.updateOptions({
+      capabilities: [
+        Capability.Pause,
+        Capability.Play,
+        Capability.SkipToNext,
+        Capability.SkipToPrevious,
+      ],
+      stopWithApp: true,
+    })
+
     await TrackPlayer.setupPlayer()
 
-    // Add a track to the queue
     await TrackPlayer.add({
       id: 'trackId',
       url: 'file://' + file.path,
-      title: 'Track Title',
-      artist: 'Track Artist',
-      // artwork: require('track.png'),
+      title: file.name,
+      artwork: await getPhoto(file.name),
     })
 
-    // Start playing it
     await TrackPlayer.play()
   }
 
@@ -39,9 +56,14 @@ export const MusicList = () => {
     <FlatList
       data={files}
       renderItem={({ item }) => (
-        <TouchableOpacity onPress={() => start(item)}>
-          <Text>{item.name}</Text>
-        </TouchableOpacity>
+        <MusicBlock onPress={() => start(item)}>
+          {/* <Image
+            source={{
+              uri: uri,
+            }}
+          /> */}
+          <Text>{item.name.replace('.mp3', '')}</Text>
+        </MusicBlock>
       )}
     />
   )
