@@ -1,9 +1,7 @@
-import React from 'react'
-import { useEffect } from 'react'
-import { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { FlatList } from 'react-native'
 import * as RNFS from 'react-native-fs'
-import TrackPlayer, { Capability, Event } from 'react-native-track-player'
+import TrackPlayer, { Capability } from 'react-native-track-player'
 import { getPhoto } from 'src/api/config'
 import styled from 'styled-components/native'
 
@@ -57,11 +55,6 @@ export const MusicList = () => {
       data={files}
       renderItem={({ item }) => (
         <MusicBlock onPress={() => start(item)}>
-          {/* <Image
-            source={{
-              uri: uri,
-            }}
-          /> */}
           <Text>{item.name.replace('.mp3', '')}</Text>
         </MusicBlock>
       )}
