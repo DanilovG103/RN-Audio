@@ -1,11 +1,10 @@
 import { Artwork } from 'assets/icons/Artwork'
 import React, { useState, useEffect } from 'react'
-import { FlatList, TouchableWithoutFeedback, View } from 'react-native'
+import { FlatList, TouchableWithoutFeedback } from 'react-native'
 import FastImage from 'react-native-fast-image'
 import * as RNFS from 'react-native-fs'
 import TrackPlayer, {
   Capability,
-  Event,
   RepeatMode,
   Track,
 } from 'react-native-track-player'
@@ -104,24 +103,6 @@ export const MusicList = () => {
     await TrackPlayer.setRepeatMode(RepeatMode.Queue)
     await TrackPlayer.play()
   }
-
-  TrackPlayer.addEventListener(
-    Event.RemotePause,
-    async () => await TrackPlayer.pause(),
-  )
-
-  TrackPlayer.addEventListener(
-    Event.RemotePlay,
-    async () => await TrackPlayer.play(),
-  )
-
-  TrackPlayer.addEventListener(Event.RemoteNext, async () => {
-    await TrackPlayer.skipToNext()
-  })
-
-  TrackPlayer.addEventListener(Event.RemotePrevious, async () => {
-    await TrackPlayer.skipToPrevious()
-  })
 
   const renderItem = ({ item }: Props) => {
     return (
