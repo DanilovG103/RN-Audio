@@ -1,5 +1,7 @@
+import { Artwork } from 'assets/icons/Artwork'
 import React, { useState, useEffect } from 'react'
-import { FlatList, View } from 'react-native'
+import { FlatList, TouchableWithoutFeedback, View } from 'react-native'
+import FastImage from 'react-native-fast-image'
 import * as RNFS from 'react-native-fs'
 import TrackPlayer, {
   Capability,
@@ -7,7 +9,9 @@ import TrackPlayer, {
   RepeatMode,
   Track,
 } from 'react-native-track-player'
+import { getPhoto } from 'src/api/config'
 import styled from 'styled-components/native'
+import { CurrentTrack } from './CurrentTrack'
 
 const MusicBlock = styled.TouchableOpacity`
   width: 100%;
@@ -15,9 +19,23 @@ const MusicBlock = styled.TouchableOpacity`
   flex-direction: row;
 `
 
+const Image = styled(FastImage)`
+  width: 48px;
+  height: 48px;
+  border-radius: 5px;
+`
+
 const Text = styled.Text`
   font-size: 18px;
   color: white;
+`
+
+const CurrentTrackBlock = styled.View`
+  position: absolute;
+  bottom: 0;
+  min-height: 60px;
+  background-color: #efeeee;
+  width: 100%;
 `
 
 interface Props {
@@ -27,6 +45,8 @@ interface Props {
 export const MusicList = () => {
   const [files, setFiles] = useState<RNFS.ReadDirItem[]>([])
   const [tracks, setTracks] = useState<Track[]>([])
+  const [visible, setVisible] = useState(false)
+  const [currentTrack, setCurrentTrack] = useState<Track>()
 
   useEffect(() => {
     RNFS.readDir(`${RNFS.ExternalStorageDirectoryPath}/Music`)
@@ -41,10 +61,12 @@ export const MusicList = () => {
     const fetchAsync = async () => {
       let result: Track[] = []
       for (const file of files) {
+        const artwork = await getPhoto(file.name.replace('.mp3', ''))
         result.push({
           id: file.name,
           url: 'file://' + file.path,
-          title: file.name,
+          title: file.name.replace('.mp3', ''),
+          artwork,
         })
         setTracks(result)
       }
@@ -77,8 +99,9 @@ export const MusicList = () => {
       ...tracks,
     ])
 
-    TrackPlayer.setRepeatMode(RepeatMode.Queue)
-
+    setCurrentTrack(track)
+    setVisible(true)
+    await TrackPlayer.setRepeatMode(RepeatMode.Queue)
     await TrackPlayer.play()
   }
 
@@ -103,18 +126,42 @@ export const MusicList = () => {
   const renderItem = ({ item }: Props) => {
     return (
       <MusicBlock onPress={() => start(item)}>
-        <View>
-          <Text>{item.title}</Text>
-        </View>
+        {item.artwork?.toString().length !== 0 ? (
+          <Image
+            resizeMode="contain"
+            source={{ uri: item.artwork?.toString() }}
+          />
+        ) : (
+          <Artwork />
+        )}
+        <Text>{item.title}</Text>
       </MusicBlock>
     )
   }
 
   return (
-    <FlatList
-      keyExtractor={(_, i) => i.toString()}
-      data={tracks}
-      renderItem={renderItem}
-    />
+    <>
+      <FlatList
+        keyExtractor={(_, i) => i.toString()}
+        data={tracks}
+        renderItem={renderItem}
+        maxToRenderPerBatch={50}
+        updateCellsBatchingPeriod={300}
+        removeClippedSubviews
+      />
+      <CurrentTrack
+        track={currentTrack}
+        visible={visible}
+        setVisible={setVisible}
+      />
+      {currentTrack && (
+        <CurrentTrackBlock>
+          <Text style={{ color: 'black' }}>{currentTrack?.title}</Text>
+          <TouchableWithoutFeedback onPress={() => TrackPlayer.pause()}>
+            <Text>pause</Text>
+          </TouchableWithoutFeedback>
+        </CurrentTrackBlock>
+      )}
+    </>
   )
 }
