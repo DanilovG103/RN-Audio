@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { FlatList, Image } from 'react-native'
+import { FlatList, View } from 'react-native'
 import * as RNFS from 'react-native-fs'
 import TrackPlayer, {
   Capability,
@@ -7,7 +7,6 @@ import TrackPlayer, {
   RepeatMode,
   Track,
 } from 'react-native-track-player'
-import { getPhoto } from 'src/api/config'
 import styled from 'styled-components/native'
 
 const MusicBlock = styled.TouchableOpacity`
@@ -40,14 +39,12 @@ export const MusicList = () => {
 
   useEffect(() => {
     const fetchAsync = async () => {
-      let result = []
+      let result: Track[] = []
       for (const file of files) {
-        const artwork = await getPhoto(file.name)
         result.push({
           id: file.name,
           url: 'file://' + file.path,
           title: file.name,
-          artwork,
         })
         setTracks(result)
       }
@@ -57,8 +54,6 @@ export const MusicList = () => {
       fetchAsync()
     }
   }, [files])
-
-  console.log(tracks.length)
 
   const start = async (track: Track) => {
     await TrackPlayer.setupPlayer({ maxCacheSize: 1000 })
@@ -78,7 +73,6 @@ export const MusicList = () => {
         id: track.title,
         url: track.url,
         title: track.title,
-        artwork: track.artwork,
       },
       ...tracks,
     ])
@@ -98,24 +92,29 @@ export const MusicList = () => {
     async () => await TrackPlayer.play(),
   )
 
-  TrackPlayer.addEventListener(
-    Event.RemoteNext,
-    async () => await TrackPlayer.skipToNext(),
-  )
+  TrackPlayer.addEventListener(Event.RemoteNext, async () => {
+    await TrackPlayer.skipToNext()
+  })
 
-  TrackPlayer.addEventListener(
-    Event.RemotePrevious,
-    async () => await TrackPlayer.skipToPrevious(),
-  )
+  TrackPlayer.addEventListener(Event.RemotePrevious, async () => {
+    await TrackPlayer.skipToPrevious()
+  })
 
   const renderItem = ({ item }: Props) => {
     return (
       <MusicBlock onPress={() => start(item)}>
-        <Image width={45} height={45} source={{ uri: item.artwork }} />
-        <Text>{item.title}</Text>
+        <View>
+          <Text>{item.title}</Text>
+        </View>
       </MusicBlock>
     )
   }
 
-  return <FlatList data={tracks} renderItem={renderItem} />
+  return (
+    <FlatList
+      keyExtractor={(_, i) => i.toString()}
+      data={tracks}
+      renderItem={renderItem}
+    />
+  )
 }
