@@ -94,6 +94,7 @@ export const MusicList = () => {
         id: track.title,
         url: track.url,
         title: track.title,
+        artwork: track.artwork,
       },
       ...tracks,
     ])
