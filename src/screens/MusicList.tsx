@@ -11,10 +11,11 @@ import TrackPlayer, {
 import { getPhoto } from 'src/api/config'
 import styled from 'styled-components/native'
 import { CurrentTrackBlock } from 'src/components/CurrentTrackBlock'
+import { Colors } from 'src/theme/colors'
 
 const Wrapper = styled.SafeAreaView`
   flex: 1;
-  background: #3f3f3f;
+  background: ${Colors.gray};
 `
 
 const MusicBlock = styled.TouchableOpacity`
@@ -31,14 +32,18 @@ const Image = styled(FastImage)`
 `
 
 const Text = styled.Text`
-  font-size: 16px;
+  font-size: 14px;
   line-height: 22px;
-  color: white;
+  color: ${Colors.beige};
 `
 
 const TextBlock = styled.View`
   width: ${Dimensions.get('window').width - 80}px;
   margin-left: 15px;
+`
+
+const TrackTitle = styled(Text)`
+  font-size: 18px;
 `
 
 interface Props {
@@ -67,12 +72,16 @@ export const MusicList = () => {
     const fetchAsync = async () => {
       let result: Track[] = []
       for (const file of files) {
-        const artwork = await getPhoto(file.name.replace('.mp3', ''))
+        const name = file.name.replace('.mp3', '')
+        const artwork = await getPhoto(name)
+        const title = name.replace(' - ', '\n').replace(/.*\n/gm, '')
+        const artist = name.replace(' - ', '\n').replace(/\n.*/gm, '')
         result.push({
           id: file.name,
           url: 'file://' + file.path,
-          title: file.name.replace('.mp3', '').replace(' - ', '\n'),
+          title,
           artwork,
+          artist,
         })
         setTracks(result)
       }
@@ -110,6 +119,7 @@ export const MusicList = () => {
         url: track.url,
         title: track.title,
         artwork: track.artwork,
+        artist: track.artist,
       },
       ...tracks,
     ])
@@ -131,7 +141,8 @@ export const MusicList = () => {
           <Artwork />
         )}
         <TextBlock>
-          <Text numberOfLines={2}>{item.title}</Text>
+          <TrackTitle numberOfLines={1}>{item.title}</TrackTitle>
+          <Text numberOfLines={1}>{item.artist}</Text>
         </TextBlock>
       </MusicBlock>
     )
