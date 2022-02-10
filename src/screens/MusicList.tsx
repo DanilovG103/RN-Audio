@@ -87,7 +87,7 @@ export const MusicList = () => {
   const start = async (track: Track) => {
     await TrackPlayer.setupPlayer({ maxCacheSize: 1000 })
     await TrackPlayer.updateOptions({
-      stopWithApp: false,
+      stopWithApp: true,
       capabilities: [
         Capability.Play,
         Capability.Pause,
