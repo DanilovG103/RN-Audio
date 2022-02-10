@@ -1,17 +1,13 @@
 import React from 'react'
-
-import { MusicList } from 'src/components/MusicList'
-import styled from 'styled-components/native'
-
-const Wrapper = styled.SafeAreaView`
-  flex: 1;
-`
+import 'react-native-gesture-handler'
+import { NavigationContainer } from '@react-navigation/native'
+import { RootNavigation } from 'src/navigation/root'
 
 const App = () => {
   return (
-    <Wrapper>
-      <MusicList />
-    </Wrapper>
+    <NavigationContainer>
+      <RootNavigation />
+    </NavigationContainer>
   )
 }
 

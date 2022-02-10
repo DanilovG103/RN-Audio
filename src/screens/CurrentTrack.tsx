@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react'
+import React from 'react'
 import Modal from 'react-native-modal'
 import { Text } from 'react-native'
-import TrackPlayer, { Track } from 'react-native-track-player'
+import { Track } from 'react-native-track-player'
 
 interface Props {
   track: Track

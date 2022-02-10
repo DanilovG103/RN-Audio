@@ -1,6 +1,6 @@
 import { Artwork } from 'assets/icons/Artwork'
 import React, { useState, useEffect } from 'react'
-import { FlatList, TouchableWithoutFeedback } from 'react-native'
+import { FlatList } from 'react-native'
 import FastImage from 'react-native-fast-image'
 import * as RNFS from 'react-native-fs'
 import TrackPlayer, {
@@ -10,8 +10,12 @@ import TrackPlayer, {
 } from 'react-native-track-player'
 import { getPhoto } from 'src/api/config'
 import styled from 'styled-components/native'
-import { CurrentTrack } from 'src/components/CurrentTrack'
-import Icon from 'react-native-vector-icons/AntDesign'
+import { CurrentTrackBlock } from 'src/components/CurrentTrackBlock'
+
+const Wrapper = styled.SafeAreaView`
+  flex: 1;
+  background: #3f3f3f;
+`
 
 const MusicBlock = styled.TouchableOpacity`
   width: 100%;
@@ -30,23 +34,6 @@ const Text = styled.Text`
   color: white;
 `
 
-const CurrentTrackBlock = styled.View`
-  position: absolute;
-  bottom: 0;
-  min-height: 60px;
-  background-color: #efeeee;
-  width: 100%;
-  flex-direction: row;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0 30px;
-`
-
-const ActionsBlock = styled.View`
-  flex-direction: row;
-  justify-content: space-around;
-`
-
 interface Props {
   item: Track
 }
@@ -54,9 +41,7 @@ interface Props {
 export const MusicList = () => {
   const [files, setFiles] = useState<RNFS.ReadDirItem[]>([])
   const [tracks, setTracks] = useState<Track[]>([])
-  const [visible, setVisible] = useState(false)
-  const [currentTrack, setCurrentTrack] = useState<Track | undefined>(undefined)
-  const [isPlaying, setIsPlaying] = useState(false)
+  const [hasTrack, setHasTrack] = useState(false)
 
   useEffect(() => {
     RNFS.readDir(`${RNFS.ExternalStorageDirectoryPath}/Music`)
@@ -86,52 +71,33 @@ export const MusicList = () => {
       }
     }
 
+    isHasTrack()
     if (files.length > 0) {
       fetchAsync()
     }
-  }, [files, currentTrack])
+  }, [files])
 
-  const getCurrentTrack = async () => {
+  const isHasTrack = async () => {
     const position = await TrackPlayer.getCurrentTrack()
     if (position !== null) {
-      const track = await TrackPlayer.getTrack(position)
-      setCurrentTrack(track)
+      setHasTrack(true)
     }
-  }
-
-  const pause = async () => {
-    await TrackPlayer.pause()
-    setIsPlaying(false)
-  }
-
-  const play = async () => {
-    await TrackPlayer.play()
-    setIsPlaying(true)
-  }
-
-  const next = async () => {
-    await TrackPlayer.skipToNext()
-    await getCurrentTrack()
-  }
-
-  const back = async () => {
-    await TrackPlayer.skipToPrevious()
-    await getCurrentTrack()
   }
 
   const start = async (track: Track) => {
     await TrackPlayer.setupPlayer({ maxCacheSize: 1000 })
-
     await TrackPlayer.updateOptions({
+      stopWithApp: false,
       capabilities: [
-        Capability.Pause,
         Capability.Play,
+        Capability.Pause,
         Capability.SkipToNext,
         Capability.SkipToPrevious,
       ],
-      stopWithApp: true,
+      compactCapabilities: [Capability.Play, Capability.Pause],
     })
 
+    await TrackPlayer.setRepeatMode(RepeatMode.Queue)
     await TrackPlayer.add([
       {
         id: track.title,
@@ -142,11 +108,9 @@ export const MusicList = () => {
       ...tracks,
     ])
 
-    setVisible(true)
-    await TrackPlayer.setRepeatMode(RepeatMode.Queue)
-    setIsPlaying(true)
+    await isHasTrack()
+
     await TrackPlayer.play()
-    await getCurrentTrack()
   }
 
   const renderItem = ({ item }: Props) => {
@@ -166,7 +130,7 @@ export const MusicList = () => {
   }
 
   return (
-    <>
+    <Wrapper>
       <FlatList
         keyExtractor={(_, i) => i.toString()}
         data={tracks}
@@ -175,33 +139,7 @@ export const MusicList = () => {
         updateCellsBatchingPeriod={300}
         removeClippedSubviews
       />
-      <CurrentTrack
-        track={currentTrack}
-        visible={visible}
-        setVisible={setVisible}
-      />
-      {currentTrack && (
-        <CurrentTrackBlock>
-          <Text style={{ color: 'black' }}>{currentTrack.title}</Text>
-          <ActionsBlock>
-            <TouchableWithoutFeedback onPress={back}>
-              <Icon name="stepbackward" color="black" size={25} />
-            </TouchableWithoutFeedback>
-            {isPlaying ? (
-              <TouchableWithoutFeedback onPress={pause}>
-                <Icon name="pausecircleo" color="black" size={25} />
-              </TouchableWithoutFeedback>
-            ) : (
-              <TouchableWithoutFeedback onPress={play}>
-                <Icon name="playcircleo" color="black" size={25} />
-              </TouchableWithoutFeedback>
-            )}
-            <TouchableWithoutFeedback onPress={next}>
-              <Icon name="stepforward" color="black" size={25} />
-            </TouchableWithoutFeedback>
-          </ActionsBlock>
-        </CurrentTrackBlock>
-      )}
-    </>
+      {hasTrack && <CurrentTrackBlock />}
+    </Wrapper>
   )
 }
