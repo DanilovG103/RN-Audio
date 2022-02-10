@@ -1,6 +1,6 @@
 import { Artwork } from 'assets/icons/Artwork'
 import React, { useState, useEffect } from 'react'
-import { FlatList } from 'react-native'
+import { Dimensions, FlatList } from 'react-native'
 import FastImage from 'react-native-fast-image'
 import * as RNFS from 'react-native-fs'
 import TrackPlayer, {
@@ -21,6 +21,7 @@ const MusicBlock = styled.TouchableOpacity`
   width: 100%;
   padding: 10px 15px;
   flex-direction: row;
+  align-items: center;
 `
 
 const Image = styled(FastImage)`
@@ -30,8 +31,14 @@ const Image = styled(FastImage)`
 `
 
 const Text = styled.Text`
-  font-size: 18px;
+  font-size: 16px;
+  line-height: 22px;
   color: white;
+`
+
+const TextBlock = styled.View`
+  width: ${Dimensions.get('window').width - 80}px;
+  margin-left: 15px;
 `
 
 interface Props {
@@ -64,7 +71,7 @@ export const MusicList = () => {
         result.push({
           id: file.name,
           url: 'file://' + file.path,
-          title: file.name.replace('.mp3', ''),
+          title: file.name.replace('.mp3', '').replace(' - ', '\n'),
           artwork,
         })
         setTracks(result)
@@ -123,7 +130,9 @@ export const MusicList = () => {
         ) : (
           <Artwork />
         )}
-        <Text>{item.title}</Text>
+        <TextBlock>
+          <Text numberOfLines={2}>{item.title}</Text>
+        </TextBlock>
       </MusicBlock>
     )
   }

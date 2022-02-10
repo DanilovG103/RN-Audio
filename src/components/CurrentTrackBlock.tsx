@@ -1,12 +1,10 @@
-import React from 'react'
+import React, { useState, useEffect } from 'react'
 import styled from 'styled-components/native'
 import Icon from 'react-native-vector-icons/AntDesign'
 import { Text, TouchableWithoutFeedback } from 'react-native'
 import { useNavigation } from '@react-navigation/native'
 import { Routes } from 'src/navigation/routes'
 import TrackPlayer, { State, Track } from 'react-native-track-player'
-import { useEffect } from 'react'
-import { useState } from 'react'
 
 const Block = styled.TouchableOpacity`
   position: absolute;
@@ -24,6 +22,7 @@ const ActionsBlock = styled.View`
   flex-direction: row;
   justify-content: space-around;
 `
+
 export const CurrentTrackBlock = () => {
   const [currentTrack, setCurrentTrack] = useState<Track>()
   const [isPlaying, setIsPlaying] = useState(false)
