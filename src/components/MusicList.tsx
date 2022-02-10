@@ -10,7 +10,8 @@ import TrackPlayer, {
 } from 'react-native-track-player'
 import { getPhoto } from 'src/api/config'
 import styled from 'styled-components/native'
-import { CurrentTrack } from './CurrentTrack'
+import { CurrentTrack } from 'src/components/CurrentTrack'
+import Icon from 'react-native-vector-icons/AntDesign'
 
 const MusicBlock = styled.TouchableOpacity`
   width: 100%;
@@ -35,6 +36,15 @@ const CurrentTrackBlock = styled.View`
   min-height: 60px;
   background-color: #efeeee;
   width: 100%;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 30px;
+`
+
+const ActionsBlock = styled.View`
+  flex-direction: row;
+  justify-content: space-around;
 `
 
 interface Props {
@@ -45,7 +55,8 @@ export const MusicList = () => {
   const [files, setFiles] = useState<RNFS.ReadDirItem[]>([])
   const [tracks, setTracks] = useState<Track[]>([])
   const [visible, setVisible] = useState(false)
-  const [currentTrack, setCurrentTrack] = useState<Track>()
+  const [currentTrack, setCurrentTrack] = useState<Track | undefined>(undefined)
+  const [isPlaying, setIsPlaying] = useState(false)
 
   useEffect(() => {
     RNFS.readDir(`${RNFS.ExternalStorageDirectoryPath}/Music`)
@@ -54,6 +65,10 @@ export const MusicList = () => {
         setFiles(file.filter(item => item.name.endsWith('.mp3')))
       })
       .catch(err => console.log(err))
+
+    return () => {
+      TrackPlayer.destroy()
+    }
   }, [])
 
   useEffect(() => {
@@ -74,7 +89,35 @@ export const MusicList = () => {
     if (files.length > 0) {
       fetchAsync()
     }
-  }, [files])
+  }, [files, currentTrack])
+
+  const getCurrentTrack = async () => {
+    const position = await TrackPlayer.getCurrentTrack()
+    if (position !== null) {
+      const track = await TrackPlayer.getTrack(position)
+      setCurrentTrack(track)
+    }
+  }
+
+  const pause = async () => {
+    await TrackPlayer.pause()
+    setIsPlaying(false)
+  }
+
+  const play = async () => {
+    await TrackPlayer.play()
+    setIsPlaying(true)
+  }
+
+  const next = async () => {
+    await TrackPlayer.skipToNext()
+    await getCurrentTrack()
+  }
+
+  const back = async () => {
+    await TrackPlayer.skipToPrevious()
+    await getCurrentTrack()
+  }
 
   const start = async (track: Track) => {
     await TrackPlayer.setupPlayer({ maxCacheSize: 1000 })
@@ -99,10 +142,11 @@ export const MusicList = () => {
       ...tracks,
     ])
 
-    setCurrentTrack(track)
     setVisible(true)
     await TrackPlayer.setRepeatMode(RepeatMode.Queue)
+    setIsPlaying(true)
     await TrackPlayer.play()
+    await getCurrentTrack()
   }
 
   const renderItem = ({ item }: Props) => {
@@ -138,10 +182,24 @@ export const MusicList = () => {
       />
       {currentTrack && (
         <CurrentTrackBlock>
-          <Text style={{ color: 'black' }}>{currentTrack?.title}</Text>
-          <TouchableWithoutFeedback onPress={() => TrackPlayer.pause()}>
-            <Text>pause</Text>
-          </TouchableWithoutFeedback>
+          <Text style={{ color: 'black' }}>{currentTrack.title}</Text>
+          <ActionsBlock>
+            <TouchableWithoutFeedback onPress={back}>
+              <Icon name="stepbackward" color="black" size={25} />
+            </TouchableWithoutFeedback>
+            {isPlaying ? (
+              <TouchableWithoutFeedback onPress={pause}>
+                <Icon name="pausecircleo" color="black" size={25} />
+              </TouchableWithoutFeedback>
+            ) : (
+              <TouchableWithoutFeedback onPress={play}>
+                <Icon name="playcircleo" color="black" size={25} />
+              </TouchableWithoutFeedback>
+            )}
+            <TouchableWithoutFeedback onPress={next}>
+              <Icon name="stepforward" color="black" size={25} />
+            </TouchableWithoutFeedback>
+          </ActionsBlock>
         </CurrentTrackBlock>
       )}
     </>

@@ -1,13 +1,17 @@
 import React from 'react'
-import { SafeAreaView } from 'react-native'
 
 import { MusicList } from 'src/components/MusicList'
+import styled from 'styled-components/native'
+
+const Wrapper = styled.SafeAreaView`
+  flex: 1;
+`
 
 const App = () => {
   return (
-    <SafeAreaView>
+    <Wrapper>
       <MusicList />
-    </SafeAreaView>
+    </Wrapper>
   )
 }
 
