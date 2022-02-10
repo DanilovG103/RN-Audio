@@ -6,6 +6,7 @@ import * as RNFS from 'react-native-fs'
 import TrackPlayer, {
   Capability,
   RepeatMode,
+  State,
   Track,
 } from 'react-native-track-player'
 import { getPhoto } from 'src/api/config'
@@ -63,9 +64,9 @@ export const MusicList = () => {
         setFiles(file.filter(item => item.name.endsWith('.mp3')))
       })
       .catch(err => console.log(err))
-
     return () => {
       TrackPlayer.destroy()
+      setHasTrack(false)
     }
   }, [])
 
@@ -95,8 +96,8 @@ export const MusicList = () => {
   }, [files])
 
   const isHasTrack = async () => {
-    const position = await TrackPlayer.getCurrentTrack()
-    if (position !== null) {
+    const state = await TrackPlayer.getState()
+    if (state !== State.None) {
       setHasTrack(true)
     }
   }
@@ -125,6 +126,7 @@ export const MusicList = () => {
       ...tracks,
     ])
 
+    setHasTrack(false)
     await isHasTrack()
 
     await TrackPlayer.play()
