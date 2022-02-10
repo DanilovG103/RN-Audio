@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import styled from 'styled-components/native'
 import Icon from 'react-native-vector-icons/AntDesign'
-import { TouchableWithoutFeedback, View } from 'react-native'
+import { Dimensions, TouchableWithoutFeedback, View } from 'react-native'
 import { useNavigation } from '@react-navigation/native'
 import { Routes } from 'src/navigation/routes'
 import TrackPlayer, { State, Track } from 'react-native-track-player'
@@ -16,12 +16,17 @@ const Block = styled.TouchableOpacity`
   flex-direction: row;
   align-items: center;
   justify-content: space-between;
-  padding: 0 30px;
+  padding: 0 20px;
 `
 
 const ActionsBlock = styled.View`
   flex-direction: row;
   justify-content: space-around;
+  width: ${Dimensions.get('window').width / 3}px;
+`
+
+const TrackInfo = styled.View`
+  width: ${Dimensions.get('window').width / 2 + 5}px;
 `
 
 const TrackTitle = styled.Text`
@@ -76,25 +81,25 @@ export const CurrentTrackBlock = () => {
 
   return (
     <Block activeOpacity={0.9} onPress={() => navigate(Routes.TRACK_PLAYER)}>
-      <View>
-        <TrackTitle>{currentTrack?.title}</TrackTitle>
-        <TrackArtist>{currentTrack?.artist}</TrackArtist>
-      </View>
+      <TrackInfo>
+        <TrackTitle numberOfLines={1}>{currentTrack?.title}</TrackTitle>
+        <TrackArtist numberOfLines={1}>{currentTrack?.artist}</TrackArtist>
+      </TrackInfo>
       <ActionsBlock>
         <TouchableWithoutFeedback onPress={back}>
-          <Icon name="stepbackward" color="black" size={25} />
+          <Icon name="stepbackward" color="black" size={28} />
         </TouchableWithoutFeedback>
         {isPlaying ? (
           <TouchableWithoutFeedback onPress={pause}>
-            <Icon name="pausecircleo" color="black" size={25} />
+            <Icon name="pausecircleo" color="black" size={28} />
           </TouchableWithoutFeedback>
         ) : (
           <TouchableWithoutFeedback onPress={play}>
-            <Icon name="playcircleo" color="black" size={25} />
+            <Icon name="playcircleo" color="black" size={28} />
           </TouchableWithoutFeedback>
         )}
         <TouchableWithoutFeedback onPress={next}>
-          <Icon name="stepforward" color="black" size={25} />
+          <Icon name="stepforward" color="black" size={28} />
         </TouchableWithoutFeedback>
       </ActionsBlock>
     </Block>
