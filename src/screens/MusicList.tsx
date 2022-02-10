@@ -94,7 +94,6 @@ export const MusicList = () => {
         Capability.SkipToNext,
         Capability.SkipToPrevious,
       ],
-      compactCapabilities: [Capability.Play, Capability.Pause],
     })
 
     await TrackPlayer.setRepeatMode(RepeatMode.Queue)
