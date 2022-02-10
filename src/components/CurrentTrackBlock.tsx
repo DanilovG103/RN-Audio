@@ -1,10 +1,16 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState } from 'react'
 import styled from 'styled-components/native'
 import Icon from 'react-native-vector-icons/AntDesign'
-import { Dimensions, TouchableWithoutFeedback, View } from 'react-native'
+import { Dimensions, TouchableWithoutFeedback } from 'react-native'
 import { useNavigation } from '@react-navigation/native'
 import { Routes } from 'src/navigation/routes'
-import TrackPlayer, { State, Track } from 'react-native-track-player'
+import TrackPlayer, {
+  Event,
+  State,
+  Track,
+  usePlaybackState,
+  useTrackPlayerEvents,
+} from 'react-native-track-player'
 import { Colors } from 'src/theme/colors'
 
 const Block = styled.TouchableOpacity`
@@ -40,8 +46,9 @@ const TrackArtist = styled(TrackTitle)`
 
 export const CurrentTrackBlock = () => {
   const [currentTrack, setCurrentTrack] = useState<Track>()
-  const [isPlaying, setIsPlaying] = useState(false)
+  const playbackState = usePlaybackState()
   const { navigate } = useNavigation()
+  const isPlaying = playbackState === State.Playing
   const pause = async () => {
     await TrackPlayer.pause()
   }
@@ -58,26 +65,15 @@ export const CurrentTrackBlock = () => {
     await TrackPlayer.skipToPrevious()
   }
 
-  useEffect(() => {
-    const getCurrentTrack = async () => {
-      const position = await TrackPlayer.getCurrentTrack()
-      if (position !== null) {
-        const track = await TrackPlayer.getTrack(position)
-        setCurrentTrack(track)
-      }
+  useTrackPlayerEvents([Event.PlaybackTrackChanged], async event => {
+    if (
+      event.type === Event.PlaybackTrackChanged &&
+      event.nextTrack !== undefined
+    ) {
+      const track = await TrackPlayer.getTrack(event.nextTrack)
+      setCurrentTrack(track)
     }
-
-    const getState = async () => {
-      const state = await TrackPlayer.getState()
-      if (state === State.Playing) {
-        setIsPlaying(true)
-      } else if (state === State.Paused) {
-        setIsPlaying(false)
-      }
-    }
-    getCurrentTrack()
-    getState()
-  }, [currentTrack])
+  })
 
   return (
     <Block activeOpacity={0.9} onPress={() => navigate(Routes.TRACK_PLAYER)}>

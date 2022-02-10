@@ -1,19 +1,20 @@
 import { Artwork } from 'assets/icons/Artwork'
 import React, { useState, useEffect } from 'react'
-import { Dimensions, FlatList } from 'react-native'
+import { Dimensions } from 'react-native'
 import FastImage from 'react-native-fast-image'
 import * as RNFS from 'react-native-fs'
 import TrackPlayer, {
   Capability,
+  Event,
   RepeatMode,
-  State,
   Track,
+  useTrackPlayerEvents,
 } from 'react-native-track-player'
-import { getPhoto } from 'src/api/config'
 import styled from 'styled-components/native'
 import { CurrentTrackBlock } from 'src/components/CurrentTrackBlock'
 import { Colors } from 'src/theme/colors'
 import { nanoid } from 'nanoid'
+import BigList from 'react-native-big-list'
 
 const Wrapper = styled.SafeAreaView`
   flex: 1;
@@ -25,12 +26,6 @@ const MusicBlock = styled.TouchableOpacity`
   padding: 10px 15px;
   flex-direction: row;
   align-items: center;
-`
-
-const Image = styled(FastImage)`
-  width: 48px;
-  height: 48px;
-  border-radius: 5px;
 `
 
 const Text = styled.Text`
@@ -66,44 +61,39 @@ export const MusicList = () => {
       .catch(err => console.log(err))
     return () => {
       TrackPlayer.destroy()
-      setHasTrack(false)
     }
   }, [])
+
+  useTrackPlayerEvents([Event.PlaybackState], async event => {
+    if (event.type === Event.PlaybackState) {
+      setHasTrack(true)
+    }
+  })
 
   useEffect(() => {
     const fetchAsync = async () => {
       let result: Track[] = []
       for (const file of files) {
         const name = file.name.replace('.mp3', '')
-        const artwork = await getPhoto(name)
         const title = name.replace(' - ', '\n').replace(/.*\n/gm, '')
         const artist = name.replace(' - ', '\n').replace(/\n.*/gm, '')
         result.push({
           id: nanoid(),
           url: 'file://' + file.path,
           title,
-          artwork,
           artist,
         })
-        setTracks(result)
       }
+      setTracks(result)
     }
 
-    isHasTrack()
     if (files.length > 0) {
       fetchAsync()
     }
   }, [files])
 
-  const isHasTrack = async () => {
-    const state = await TrackPlayer.getState()
-    if (state !== State.None) {
-      setHasTrack(true)
-    }
-  }
-
   const start = async (track: Track) => {
-    await TrackPlayer.setupPlayer({ maxCacheSize: 1000 })
+    await TrackPlayer.setupPlayer()
     await TrackPlayer.updateOptions({
       stopWithApp: true,
       capabilities: [
@@ -115,34 +105,17 @@ export const MusicList = () => {
     })
 
     await TrackPlayer.setRepeatMode(RepeatMode.Queue)
-    await TrackPlayer.add([
-      {
-        id: nanoid(),
-        url: track.url,
-        title: track.title,
-        artwork: track.artwork,
-        artist: track.artist,
-      },
-      ...tracks,
-    ])
-
-    setHasTrack(false)
-    await isHasTrack()
+    await TrackPlayer.add(tracks)
+    const trackIndex = tracks.findIndex(item => item.id === track.id)
+    await TrackPlayer.skip(trackIndex)
 
     await TrackPlayer.play()
   }
 
   const renderItem = ({ item }: Props) => {
     return (
-      <MusicBlock onPress={() => start(item)}>
-        {item.artwork?.toString().length !== 0 ? (
-          <Image
-            resizeMode="contain"
-            source={{ uri: item.artwork?.toString() }}
-          />
-        ) : (
-          <Artwork />
-        )}
+      <MusicBlock key={item.id} onPress={() => start(item)}>
+        <Artwork />
         <TextBlock>
           <TrackTitle numberOfLines={1}>{item.title}</TrackTitle>
           <Text numberOfLines={1}>{item.artist}</Text>
@@ -153,14 +126,7 @@ export const MusicList = () => {
 
   return (
     <Wrapper>
-      <FlatList
-        keyExtractor={item => item.id.toString()}
-        data={tracks}
-        renderItem={renderItem}
-        maxToRenderPerBatch={50}
-        updateCellsBatchingPeriod={300}
-        removeClippedSubviews
-      />
+      <BigList data={tracks} renderItem={renderItem} itemHeight={60} />
       {hasTrack && <CurrentTrackBlock />}
     </Wrapper>
   )
