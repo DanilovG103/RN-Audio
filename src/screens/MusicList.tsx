@@ -12,6 +12,7 @@ import { getPhoto } from 'src/api/config'
 import styled from 'styled-components/native'
 import { CurrentTrackBlock } from 'src/components/CurrentTrackBlock'
 import { Colors } from 'src/theme/colors'
+import { nanoid } from 'nanoid'
 
 const Wrapper = styled.SafeAreaView`
   flex: 1;
@@ -77,7 +78,7 @@ export const MusicList = () => {
         const title = name.replace(' - ', '\n').replace(/.*\n/gm, '')
         const artist = name.replace(' - ', '\n').replace(/\n.*/gm, '')
         result.push({
-          id: file.name,
+          id: nanoid(),
           url: 'file://' + file.path,
           title,
           artwork,
@@ -115,7 +116,7 @@ export const MusicList = () => {
     await TrackPlayer.setRepeatMode(RepeatMode.Queue)
     await TrackPlayer.add([
       {
-        id: track.title,
+        id: nanoid(),
         url: track.url,
         title: track.title,
         artwork: track.artwork,
@@ -151,7 +152,7 @@ export const MusicList = () => {
   return (
     <Wrapper>
       <FlatList
-        keyExtractor={(_, i) => i.toString()}
+        keyExtractor={item => item.id.toString()}
         data={tracks}
         renderItem={renderItem}
         maxToRenderPerBatch={50}
