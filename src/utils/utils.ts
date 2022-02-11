@@ -15,3 +15,7 @@ export const next = async () => {
 export const back = async () => {
   await TrackPlayer.skipToPrevious()
 }
+
+export const getRandomNumber = () => {
+  return Math.floor(Math.random() * 10)
+}

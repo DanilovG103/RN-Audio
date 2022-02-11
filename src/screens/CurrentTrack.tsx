@@ -12,7 +12,7 @@ import TrackPlayer, {
   useTrackPlayerEvents,
 } from 'react-native-track-player'
 import Icon from 'react-native-vector-icons/AntDesign'
-import { getPhoto } from 'src/api/config'
+import { getPhoto, getRandomPhoto } from 'src/api/config'
 import { Colors } from 'src/theme/colors'
 import styled from 'styled-components/native'
 import { back, next, pause, play } from 'src/utils/utils'
@@ -64,6 +64,7 @@ export const CurrentTrack = () => {
   const repeatIconColor = isQueue ? Colors.primary : Colors.lightGray
   const [shuffled, setShuffled] = useState(false)
   const shuffleIconColor = shuffled ? Colors.primary : Colors.lightGray
+  const playbackIcon = isPlaying ? 'pausecircleo' : 'playcircleo'
 
   const toggleRepeatMode = () => {
     if (isQueue) {
@@ -73,6 +74,10 @@ export const CurrentTrack = () => {
     } else {
       setRepeatMode(RepeatMode.Off)
     }
+  }
+
+  const togglePlaybackState = () => {
+    return isPlaying ? pause() : play()
   }
 
   useTrackPlayerEvents([Event.PlaybackTrackChanged], async event => {
@@ -90,7 +95,10 @@ export const CurrentTrack = () => {
     const getTrack = async () => {
       const index = await TrackPlayer.getCurrentTrack()
       const track = await TrackPlayer.getTrack(index)
-      const artwork = await getPhoto(`${track.artist} ${track.title}`)
+      const currentArtwork = await getPhoto(`${track.artist} ${track.title}`)
+      const randomArtwork = await getRandomPhoto()
+      const artwork =
+        currentArtwork.length !== 0 ? currentArtwork : randomArtwork
       setCurrentTrack({ ...track, artwork })
     }
     getTrack()
@@ -122,7 +130,7 @@ export const CurrentTrack = () => {
 
   return (
     <Wrapper>
-      <Image resizeMode="contain" source={{ uri: currentTrack?.artwork }} />
+      <Image resizeMode="cover" source={{ uri: currentTrack?.artwork }} />
       <Progress
         value={position}
         minimumValue={0}
@@ -143,15 +151,9 @@ export const CurrentTrack = () => {
         <TouchableOpacity onPress={back}>
           <Icon name="stepbackward" size={35} />
         </TouchableOpacity>
-        {isPlaying ? (
-          <TouchableOpacity onPress={pause}>
-            <Icon name="pausecircleo" size={35} />
-          </TouchableOpacity>
-        ) : (
-          <TouchableOpacity onPress={play}>
-            <Icon name="playcircleo" size={35} />
-          </TouchableOpacity>
-        )}
+        <TouchableOpacity onPress={togglePlaybackState}>
+          <Icon name={playbackIcon} size={35} />
+        </TouchableOpacity>
         <TouchableOpacity onPress={next}>
           <Icon name="stepforward" size={35} />
         </TouchableOpacity>
