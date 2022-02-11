@@ -14,6 +14,7 @@ import Icon from 'react-native-vector-icons/AntDesign'
 import { getPhoto } from 'src/api/config'
 import { Colors } from 'src/theme/colors'
 import styled from 'styled-components/native'
+import { back, next, pause, play } from 'src/utils/utils'
 
 const Wrapper = styled.SafeAreaView`
   flex: 1;
@@ -54,22 +55,6 @@ export const CurrentTrack = () => {
   const playbackState = usePlaybackState()
   const isPlaying = playbackState === State.Playing
   const { position, duration } = useProgress()
-
-  const pause = async () => {
-    await TrackPlayer.pause()
-  }
-
-  const play = async () => {
-    await TrackPlayer.play()
-  }
-
-  const next = async () => {
-    await TrackPlayer.skipToNext()
-  }
-
-  const back = async () => {
-    await TrackPlayer.skipToPrevious()
-  }
 
   useTrackPlayerEvents([Event.PlaybackTrackChanged], async event => {
     if (

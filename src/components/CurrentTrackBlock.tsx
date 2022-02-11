@@ -12,6 +12,7 @@ import TrackPlayer, {
   useTrackPlayerEvents,
 } from 'react-native-track-player'
 import { Colors } from 'src/theme/colors'
+import { back, pause, play, next } from 'src/utils/utils'
 
 const Block = styled.TouchableOpacity`
   position: absolute;
@@ -49,21 +50,6 @@ export const CurrentTrackBlock = () => {
   const playbackState = usePlaybackState()
   const { navigate } = useNavigation()
   const isPlaying = playbackState === State.Playing
-  const pause = async () => {
-    await TrackPlayer.pause()
-  }
-
-  const play = async () => {
-    await TrackPlayer.play()
-  }
-
-  const next = async () => {
-    await TrackPlayer.skipToNext()
-  }
-
-  const back = async () => {
-    await TrackPlayer.skipToPrevious()
-  }
 
   useTrackPlayerEvents([Event.PlaybackTrackChanged], async event => {
     if (
