@@ -1,7 +1,6 @@
 import { Artwork } from 'assets/icons/Artwork'
 import React, { useState, useEffect } from 'react'
 import { Dimensions } from 'react-native'
-import FastImage from 'react-native-fast-image'
 import * as RNFS from 'react-native-fs'
 import TrackPlayer, {
   Capability,
@@ -15,6 +14,7 @@ import { CurrentTrackBlock } from 'src/components/CurrentTrackBlock'
 import { Colors } from 'src/theme/colors'
 import { nanoid } from 'nanoid'
 import BigList from 'react-native-big-list'
+import { check, PERMISSIONS, request, RESULTS } from 'react-native-permissions'
 
 const Wrapper = styled.SafeAreaView`
   flex: 1;
@@ -51,6 +51,17 @@ export const MusicList = () => {
   const [files, setFiles] = useState<RNFS.ReadDirItem[]>([])
   const [tracks, setTracks] = useState<Track[]>([])
   const [hasTrack, setHasTrack] = useState(false)
+  const [isAccessDenied, setIsAccessDenied] = useState(true)
+
+  check(PERMISSIONS.ANDROID.READ_EXTERNAL_STORAGE).then(result => {
+    if (result === RESULTS.GRANTED) {
+      setIsAccessDenied(false)
+    } else if (result === RESULTS.DENIED) {
+      request(PERMISSIONS.ANDROID.READ_EXTERNAL_STORAGE).then(() => {
+        setIsAccessDenied(false)
+      })
+    }
+  })
 
   useEffect(() => {
     RNFS.readDir(`${RNFS.ExternalStorageDirectoryPath}/Music`)
@@ -126,6 +137,9 @@ export const MusicList = () => {
 
   return (
     <Wrapper>
+      {isAccessDenied && (
+        <Text>Please give permisions to read external storage</Text>
+      )}
       <BigList data={tracks} renderItem={renderItem} itemHeight={60} />
       {hasTrack && <CurrentTrackBlock />}
     </Wrapper>
