@@ -38,9 +38,10 @@ const Progress = styled(Slider)`
 
 const Artist = styled.Text`
   font-size: 19px;
+  text-align: center;
 `
 
-const Title = styled.Text`
+const Title = styled(Artist)`
   font-size: 23px;
   font-weight: 700;
 `
