@@ -10,6 +10,7 @@
     "lint": "eslint . --ext .js,.jsx,.ts,.tsx"
   },
   "dependencies": {
+    "@react-native-community/slider": "4.2.0",
     "@react-navigation/native": "6.0.8",
     "@react-navigation/stack": "6.1.1",
     "nanoid": "3.2.0",
@@ -21,7 +22,7 @@
     "react-native-gesture-handler": "2.2.0",
     "react-native-get-random-values": "1.7.2",
     "react-native-modal": "13.0.0",
-    "react-native-permissions": "^3.2.0",
+    "react-native-permissions": "3.2.0",
     "react-native-safe-area-context": "3.3.2",
     "react-native-svg": "12.1.1",
     "react-native-track-player": "2.1.2",
