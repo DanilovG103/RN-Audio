@@ -4,6 +4,7 @@ import { TouchableOpacity } from 'react-native'
 import FastImage from 'react-native-fast-image'
 import TrackPlayer, {
   Event,
+  RepeatMode,
   State,
   Track,
   usePlaybackState,
@@ -15,6 +16,7 @@ import { getPhoto } from 'src/api/config'
 import { Colors } from 'src/theme/colors'
 import styled from 'styled-components/native'
 import { back, next, pause, play } from 'src/utils/utils'
+import IconM from 'react-native-vector-icons/MaterialCommunityIcons'
 
 const Wrapper = styled.SafeAreaView`
   flex: 1;
@@ -55,6 +57,20 @@ export const CurrentTrack = () => {
   const playbackState = usePlaybackState()
   const isPlaying = playbackState === State.Playing
   const { position, duration } = useProgress()
+  const [repeatMode, setRepeatMode] = useState<RepeatMode>(RepeatMode.Queue)
+  const isQueue = repeatMode === RepeatMode.Queue
+  const isRepeatOff = repeatMode === RepeatMode.Off
+  const repeatIconColor = isQueue ? '#FFD479' : Colors.lightGray
+
+  const toggleRepeatMode = () => {
+    if (isQueue) {
+      setRepeatMode(RepeatMode.Track)
+    } else if (isRepeatOff) {
+      setRepeatMode(RepeatMode.Queue)
+    } else {
+      setRepeatMode(RepeatMode.Off)
+    }
+  }
 
   useTrackPlayerEvents([Event.PlaybackTrackChanged], async event => {
     if (
@@ -76,6 +92,10 @@ export const CurrentTrack = () => {
     }
     getTrack()
   }, [])
+
+  useEffect(() => {
+    TrackPlayer.setRepeatMode(repeatMode)
+  }, [repeatMode])
 
   return (
     <Wrapper>
@@ -108,6 +128,13 @@ export const CurrentTrack = () => {
         )}
         <TouchableOpacity onPress={next}>
           <Icon name="stepforward" size={35} />
+        </TouchableOpacity>
+        <TouchableOpacity onPress={toggleRepeatMode}>
+          {isQueue || isRepeatOff ? (
+            <IconM name="repeat" size={30} color={repeatIconColor} />
+          ) : (
+            <IconM name="repeat-once" color="#FFD479" size={30} />
+          )}
         </TouchableOpacity>
       </Actions>
     </Wrapper>
