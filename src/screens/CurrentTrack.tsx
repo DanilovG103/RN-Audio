@@ -60,7 +60,9 @@ export const CurrentTrack = () => {
   const [repeatMode, setRepeatMode] = useState<RepeatMode>(RepeatMode.Queue)
   const isQueue = repeatMode === RepeatMode.Queue
   const isRepeatOff = repeatMode === RepeatMode.Off
-  const repeatIconColor = isQueue ? '#FFD479' : Colors.lightGray
+  const repeatIconColor = isQueue ? Colors.primary : Colors.lightGray
+  const [shuffled, setShuffled] = useState(false)
+  const shuffleIconColor = shuffled ? Colors.primary : Colors.lightGray
 
   const toggleRepeatMode = () => {
     if (isQueue) {
@@ -93,6 +95,26 @@ export const CurrentTrack = () => {
     getTrack()
   }, [])
 
+  const shuffle = (array: Track[]) => {
+    const newArr = [...array]
+    newArr.sort(() => Math.random() - 0.5)
+    return newArr
+  }
+
+  const toggleShuffleMode = async () => {
+    const queue = await TrackPlayer.getQueue()
+    if (!shuffled) {
+      const shuffledQueue = shuffle(queue)
+      await TrackPlayer.removeUpcomingTracks()
+      await TrackPlayer.add(shuffledQueue)
+      setShuffled(true)
+    } else {
+      setShuffled(false)
+      await TrackPlayer.reset()
+      await TrackPlayer.add(queue)
+    }
+  }
+
   useEffect(() => {
     TrackPlayer.setRepeatMode(repeatMode)
   }, [repeatMode])
@@ -104,8 +126,8 @@ export const CurrentTrack = () => {
         value={position}
         minimumValue={0}
         maximumValue={duration}
-        thumbTintColor="#FFD479"
-        minimumTrackTintColor="#FFD479"
+        thumbTintColor={Colors.primary}
+        minimumTrackTintColor={Colors.primary}
         maximumTrackTintColor="#FFFFFF"
         onSlidingComplete={async value => {
           await TrackPlayer.seekTo(value)
@@ -114,6 +136,9 @@ export const CurrentTrack = () => {
       <Title>{currentTrack?.title}</Title>
       <Artist>{currentTrack?.artist}</Artist>
       <Actions>
+        <TouchableOpacity onPress={toggleShuffleMode}>
+          <IconM color={shuffleIconColor} name="shuffle-variant" size={35} />
+        </TouchableOpacity>
         <TouchableOpacity onPress={back}>
           <Icon name="stepbackward" size={35} />
         </TouchableOpacity>
