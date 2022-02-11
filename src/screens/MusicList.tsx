@@ -85,6 +85,7 @@ export const MusicList = () => {
       .catch(err => console.log(err))
     return () => {
       TrackPlayer.destroy()
+      setHasTrack(false)
     }
   }, [])
 
@@ -125,6 +126,12 @@ export const MusicList = () => {
         Capability.Pause,
         Capability.SkipToNext,
         Capability.SkipToPrevious,
+      ],
+      compactCapabilities: [
+        Capability.SkipToNext,
+        Capability.SkipToPrevious,
+        Capability.Play,
+        Capability.Pause,
       ],
     })
 
