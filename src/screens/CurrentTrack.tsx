@@ -1,5 +1,5 @@
-import Slider from '@react-native-community/slider'
 import React, { useEffect, useState } from 'react'
+import Slider from '@react-native-community/slider'
 import { TouchableOpacity } from 'react-native'
 import FastImage from 'react-native-fast-image'
 import TrackPlayer, {
@@ -94,7 +94,7 @@ export const CurrentTrack = () => {
 
   return (
     <Wrapper>
-      <Image source={{ uri: currentTrack?.artwork }} />
+      <Image resizeMode="contain" source={{ uri: currentTrack?.artwork }} />
       <Progress
         value={position}
         minimumValue={0}
