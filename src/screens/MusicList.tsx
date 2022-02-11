@@ -1,6 +1,6 @@
 import { Artwork } from 'assets/icons/Artwork'
 import React, { useState, useEffect } from 'react'
-import { Dimensions } from 'react-native'
+import { Dimensions, Platform } from 'react-native'
 import * as RNFS from 'react-native-fs'
 import TrackPlayer, {
   Capability,
@@ -52,16 +52,29 @@ export const MusicList = () => {
   const [tracks, setTracks] = useState<Track[]>([])
   const [hasTrack, setHasTrack] = useState(false)
   const [isAccessDenied, setIsAccessDenied] = useState(true)
+  const platform = Platform.OS
 
-  check(PERMISSIONS.ANDROID.READ_EXTERNAL_STORAGE).then(result => {
-    if (result === RESULTS.GRANTED) {
-      setIsAccessDenied(false)
-    } else if (result === RESULTS.DENIED) {
-      request(PERMISSIONS.ANDROID.READ_EXTERNAL_STORAGE).then(() => {
+  if (platform === 'ios') {
+    check(PERMISSIONS.IOS.MEDIA_LIBRARY).then(result => {
+      if (result === RESULTS.GRANTED) {
         setIsAccessDenied(false)
-      })
-    }
-  })
+      } else if (result === RESULTS.UNAVAILABLE) {
+        request(PERMISSIONS.IOS.MEDIA_LIBRARY).then(() => {
+          setIsAccessDenied(false)
+        })
+      }
+    })
+  } else {
+    check(PERMISSIONS.ANDROID.READ_EXTERNAL_STORAGE).then(result => {
+      if (result === RESULTS.GRANTED) {
+        setIsAccessDenied(false)
+      } else if (result === RESULTS.DENIED) {
+        request(PERMISSIONS.ANDROID.READ_EXTERNAL_STORAGE).then(() => {
+          setIsAccessDenied(false)
+        })
+      }
+    })
+  }
 
   useEffect(() => {
     RNFS.readDir(`${RNFS.ExternalStorageDirectoryPath}/Music`)
