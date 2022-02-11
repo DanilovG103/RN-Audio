@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import Slider from '@react-native-community/slider'
-import FastImage from 'react-native-fast-image'
 import { TouchableOpacity } from 'react-native'
+import FastImage from 'react-native-fast-image'
 import TrackPlayer, {
   Event,
   State,
