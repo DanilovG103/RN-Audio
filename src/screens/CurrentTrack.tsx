@@ -120,7 +120,11 @@ export const CurrentTrack = () => {
     } else {
       setShuffled(false)
       await TrackPlayer.reset()
+      const trackIndex = queue.findIndex(
+        item => item.title === currentTrack?.title,
+      )
       await TrackPlayer.add(queue)
+      await TrackPlayer.skip(trackIndex)
     }
   }
 
